@@ -8,7 +8,7 @@ from inspect import isfunction
 from PIL import Image, ImageDraw, ImageFont
 
 
-def log_txt_as_img(wh, xc, size=10):
+def log_txt_as_img(wh, xc, size=10, font_path='font/DejaVuSans.ttf'):
     # wh a tuple of (width, height)
     # xc a list of captions to plot
     b = len(xc)
@@ -16,21 +16,20 @@ def log_txt_as_img(wh, xc, size=10):
     for bi in range(b):
         txt = Image.new("RGB", wh, color="white")
         draw = ImageDraw.Draw(txt)
-        font = ImageFont.truetype('font/DejaVuSans.ttf', size=size)
+        font = ImageFont.truetype(font_path, size=size)
         nc = int(40 * (wh[0] / 256))
         lines = "\n".join(xc[bi][start:start + nc] for start in range(0, len(xc[bi]), nc))
 
         try:
             draw.text((0, 0), lines, fill="black", font=font)
         except UnicodeEncodeError:
-            print("Cant encode string for logging. Skipping.")
+            print("Can't encode string for logging. Skipping.")
 
         txt = np.array(txt).transpose(2, 0, 1) / 127.5 - 1.0
         txts.append(txt)
     txts = np.stack(txts)
     txts = torch.tensor(txts)
     return txts
-
 
 def ismap(x):
     if not isinstance(x, torch.Tensor):
